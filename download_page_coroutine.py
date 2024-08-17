@@ -38,6 +38,8 @@ async def download(url):
         try:
             task_html = asyncio.create_task(readhtml(reader_co, int(header["Content-Length"])))
             html = await task_html
+            writer_co.close() 
+            await writer_co.wait_closed()
             return html
         except KeyError:
             print("Content-Length not found in header")
