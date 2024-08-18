@@ -81,7 +81,7 @@ class EventLoops:
     def show_counter(self, e):
         """button click increments and displays value on gui"""
         self.count = self.count + 1
-        self.label1.configure(text=count)
+        self.label1.configure(text=self.count)
         asyncio.run_coroutine_threadsafe(self.counter_updated(), self.async_loop)
     async def counter_updated(self):
         print('counter updated')
