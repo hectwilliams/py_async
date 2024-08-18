@@ -62,6 +62,7 @@ root=None
 task1=None 
 task2=None 
 label1=None
+async_loop = None 
 
 # gui event loop -> main thread 
 def setup_gui():
@@ -81,13 +82,17 @@ def stop_prog(e):
     """button click closes gui application"""
     global root
     root.quit()
+    # asyncio.run_coroutine_threadsafe()
 def show_counter(e):
     """button click increments and displays value on gui"""
     global label1
     global count
     count = count + 1
     label1.configure(text=count)
+    asyncio.run_coroutine_threadsafe(counter_updated(), async_loop)
 # asyncio event loop -> other thread 
+async def counter_updated():
+    print('counter updated')
 async def tick():
     """prints message when event loop is available"""
     k=0
@@ -97,7 +102,9 @@ async def tick():
         await asyncio.sleep(0.5)
 async def main():
     """setup/starts event loop"""
+    global async_loop
     task = asyncio.create_task((tick()))
+    async_loop = task.get_loop() # get event loop 
     await asyncio.wait((task,))
 def run_asyncio():
     """calls asynchronous main to start"""
