@@ -57,60 +57,51 @@ import asyncio
 import tkinter
 import threading
 
-count=0
-root=None 
-task1=None 
-task2=None 
-label1=None
-async_loop = None 
-
-# gui event loop -> main thread 
-def setup_gui():
-    """setup gui"""
-    global root, label1
-    root = tkinter.Tk()
-    root.geometry('600x600')
-    button1 = tkinter.Button(root,height=5, width=10, text="?")
-    button1.grid(row=1, column=1)
-    button1.bind('<ButtonPress-1>', stop_prog)
-    button2 = tkinter.Button(root,height=5, width=10, text="Click Me")
-    button2.grid(row=2, column=1)
-    button2.bind('<ButtonPress-1>', show_counter)
-    label1 = tkinter.Label(root, text="0")
-    label1.grid(row=3, column=1)
-def stop_prog(e):
-    """button click closes gui application"""
-    global root
-    root.quit()
-    # asyncio.run_coroutine_threadsafe()
-def show_counter(e):
-    """button click increments and displays value on gui"""
-    global label1
-    global count
-    count = count + 1
-    label1.configure(text=count)
-    asyncio.run_coroutine_threadsafe(counter_updated(), async_loop)
-# asyncio event loop -> other thread 
-async def counter_updated():
-    print('counter updated')
-async def tick():
-    """prints message when event loop is available"""
-    k=0
-    while True:
-        k += 1
-        print("TICK", k)
-        await asyncio.sleep(0.5)
-async def main():
-    """setup/starts event loop"""
-    global async_loop
-    task = asyncio.create_task((tick()))
-    async_loop = task.get_loop() # get event loop 
-    await asyncio.wait((task,))
-def run_asyncio():
-    """calls asynchronous main to start"""
-    asyncio.run(main())
-
-setup_gui()
-t=threading.Thread(target=run_asyncio, daemon=True) # thread terminates if main thread terminates 
+class EventLoops:
+    def __init__(self) -> None:
+        self.count = 0
+        self.root = None 
+        self.label1 = None
+        self.async_loop = None 
+    def setup_gui(self):
+        """setup gui"""
+        self.root = tkinter.Tk()
+        self.root.geometry('600x600')
+        button1 = tkinter.Button(self.root,height=5, width=10, text="?")
+        button1.grid(row=1, column=1)
+        button1.bind('<ButtonPress-1>', self.stop_prog)
+        button2 = tkinter.Button(self.root,height=5, width=10, text="Click Me")
+        button2.grid(row=2, column=1)
+        button2.bind('<ButtonPress-1>', self.show_counter)
+        self.label1 = tkinter.Label(self.root, text="0")
+        self.label1.grid(row=3, column=1)
+    def stop_prog(self, e):
+        """button click closes gui application"""
+        self.root.quit()
+    def show_counter(self, e):
+        """button click increments and displays value on gui"""
+        self.count = self.count + 1
+        self.label1.configure(text=count)
+        asyncio.run_coroutine_threadsafe(self.counter_updated(), self.async_loop)
+    async def counter_updated(self):
+        print('counter updated')
+    async def tick(self):
+        """prints message when event loop is available"""
+        k=0
+        while True:
+            k += 1
+            print("TICK", k)
+            await asyncio.sleep(0.5)
+    async def main(self):
+        """setup/starts event loop"""
+        task = asyncio.create_task((self.tick()))
+        self.async_loop = task.get_loop() # get event loop 
+        await asyncio.wait((task,))
+    def run_asyncio(self):
+        """calls asynchronous main to start"""
+        asyncio.run(self.main())
+eventloops_inst = EventLoops() 
+eventloops_inst.setup_gui()
+t=threading.Thread(target=eventloops_inst.run_asyncio, daemon=True) # thread terminates if main thread terminates 
 t.start()
-root.mainloop()
+eventloops_inst.root.mainloop()
